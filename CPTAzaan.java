@@ -22,9 +22,9 @@ public class CPTAzaan {
 		// Setting a custom red, blue, green rgb color 0-255
 		con.setDrawColor(new Color(3, 100, 230));
 		intY = intY + 5;
-		BufferedImage 01_Menu = con.loadImage("01_Menu.png");
+		BufferedImage GTW = con.loadImage("GTW.png");
 		Font fntTest = con.loadFont("Play Now", 40);
-		con.drawImage(01_Menu, intX, 0);
+		con.drawImage(GTW, intX, 0);
 		intX = intX - 8;
 		
 		con.setDrawFont(fntTest);
