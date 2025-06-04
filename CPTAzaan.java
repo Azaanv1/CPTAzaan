@@ -14,8 +14,8 @@ public static Console con = new Console("Guess the Word Game");
 		int intX = 400;
         int intY = 400;
         int intZ = 400;
-        
-        while(intX > 0){
+			       
+			while(intX > 0){
 			con.setDrawColor(Color.BLACK);
 			con.fillRect(0,0,700,700);
 			con.setDrawColor(Color.WHITE);
@@ -32,14 +32,9 @@ public static Console con = new Console("Guess the Word Game");
 		
 		con.setDrawFont(fntTest);
 		
-		con.setDrawColor(new Color(200, 30, 30));
-		con.drawString("Quit!", 0,0);
-		// repainting ensures that all the drawing commands above appear
-		con.repaint();
-		con.sleep(33);
+	
 
 
-    public static void main(String[] args) throws IOException {
         while (true) {
             con.clear();
             con.println("=== GUESS THE WORD ===");
@@ -164,7 +159,7 @@ public static Console con = new Console("Guess the Word Game");
         if (!new String(display).contains("_")) {
             con.println("You guessed it! The word was: " + word);
         } else {
-            con.println("You're out of points. The word was: " + word);
+				con.println("You're out of points. The word was: " + word);
         }
 
         return points;
@@ -185,4 +180,5 @@ public static Console con = new Console("Guess the Word Game");
       
       
 	}
+
 }
