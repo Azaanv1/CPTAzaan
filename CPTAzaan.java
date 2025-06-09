@@ -89,7 +89,7 @@ public static Console con = new Console("Guess the Word Game");
             if (!again.equals("Y")) break;
         }
 
-        saveToLeaderboard(playerName, totalPoints);
+        SaveToLeaderboard(playerName, totalPoints);
         con.println("Game Over. Your total points: " + totalPoints);
         con.readLine("Press Enter to return to menu...");
     }
@@ -136,11 +136,11 @@ public static Console con = new Console("Guess the Word Game");
                 con.println("Invalid input.");
                 continue;
             }
-
+            
             char letter = guess.charAt(0);
             guessed.add(letter);
-            boolean found = false;
-
+			boolean found = false;
+			
             for (int i = 0; i < word.length(); i++) {
                 if (word.charAt(i) == letter) {
                     display[i] = letter;
@@ -159,10 +159,11 @@ public static Console con = new Console("Guess the Word Game");
         if (!new String(display).contains("_")) {
             con.println("You guessed it! The word was: " + word);
         } else {
-				con.println("You're out of points. The word was: " + word);
-        }
+			   con.println("You're out of points. The word was: " + word);
+		
+		}
 
-        return points;
+				return points;
     }
 
   
