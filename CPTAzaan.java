@@ -1,9 +1,14 @@
 import arc.*;
 import java.util.*;
+import java.awt.image.BufferedImage;
+
 
 public class CPTAzaan {
     public static void main(String[] args) {
-        Console con = new Console(1280,720, "Guess The Word");
+        Console con = new Console("Guess The Word" , 1280, 720);
+        BufferedImage imgLogo = con.loadImage("Images/images.png");
+        con.drawImage(imgLogo, 440, 100);
+		con.repaint();
        //Ask for player name
        con.println("Enter your name");
        String strName = con.readLine();
@@ -44,22 +49,29 @@ public class CPTAzaan {
                 themeWords.close();
 				
 				String[][] arrWords = new String[intCount][2];
-				theme Words = new TextInputFile(strTheme);
-				for (int i= 0, i < intCount; i++){
+				TextInputFile Words = new TextInputFile(strTheme);
+				for (int i= 0; i < intCount; i++){
 					arrWords[i][0] = themeWords.readLine();
-					arrWords[i][1] = Integer.toString((int ) (Math.randdom()* 100+1));
+					arrWords[i][1] = Integer.toString((int ) (Math.random()* 100+1));
 				}
 				themeWords.close();
 				
 				//Bubble sort by collum 2 
 				for (int i = 0; i < arrWords.length - 1; i++){
-					for(int j = 0; i <arrWords.length - i 1; j++){
-						if(integer.parseInt(arrWords[j][1])<Integer.pareInt(arrWords
-						
+					for(int j = 0; i <arrWords.length - i ; j++){
+						if(Integer.parseInt(arrWords[j][1])<Integer.parseInt(arrWords[j + 1][1])){
+							String tempWord = arrWords[j][0];
+							String tempScore = arrWords[j][1];
+						}
+					}
 
 
         
     }
 }
+}
+}
+}
+
 
 
