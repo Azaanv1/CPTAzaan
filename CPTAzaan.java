@@ -8,9 +8,10 @@ public class CPTAzaan {
         arc.Console con = new arc.Console("Guess The Word", 1280, 720);
         Random rand = new Random();
 
+        // Feature: Console window 1280x720 + Debug output
         System.out.println("[DEBUG] Game started");
 
-        // Display flashing welcome text animation
+        // === Animation Intro ===
         for (int i = 0; i < 6; i++) {
             con.clear();
             if (i % 2 == 0) {
@@ -24,10 +25,10 @@ public class CPTAzaan {
         con.clear();
         con.print("Enter your name: ");
         String strName = con.readLine();
-        int intPoints = strName.equals("statitan") ? 15 : 8;  // Cheat feature
-        System.out.println("[DEBUG] Player name: " + strName);
+        int intPoints = strName.equalsIgnoreCase("statitan") ? 20 : 10; // Cheat feature
+        System.out.println("[DEBUG] Player name: " + strName + ", Points: " + intPoints);
 
-        // Show main menu
+        // === Main Menu ===
         char choice = ' ';
         while (choice != 'q') {
             con.clear();
@@ -36,92 +37,158 @@ public class CPTAzaan {
             con.println("(v) View Leaderboard");
             con.println("(a) Add Theme");
             con.println("(h) Help");
-            con.println("(s) ??? (Secret)");
+            con.println("(s) ??? Secret Option");
             con.println("(q) Quit");
-            con.print("Enter choice: ");
-
+            con.print("Choose: ");
             choice = con.getChar();
-            System.out.println("[DEBUG] Menu choice: " + choice);
+            System.out.println("[DEBUG] Menu Choice: " + choice);
 
             if (choice == 'h') {
                 con.clear();
-                con.println("HELP MENU:");
-                con.println("- Guess letters to reveal the hidden word.");
-                con.println("- You lose a point for wrong guesses.");
-                con.println("- Win by revealing the full word before points run out!");
-                con.println("Press any key to return to menu...");
+                con.println("HELP:");
+                con.println("- Guess the letters in the word.");
+                con.println("- Wrong guess = lose a point.");
+                con.println("- Secret option and cheat available!");
                 con.getChar();
             } else if (choice == 's') {
                 con.clear();
-                con.println("🎉 SECRET JOKE 🎉");
-                con.println("Why did the programmer quit their job?");
+                con.println("💡 SECRET OPTION 💡");
+                con.println("Why do Java developers wear glasses?");
                 con.sleep(1500);
-                con.println("Because they didn't get arrays! 😂");
-                con.println("Press any key to go back...");
+                con.println("Because they don't C#! 😂");
                 con.getChar();
-            } else if (choice == 'p') {
+            } else if (choice == 'v') {
                 con.clear();
-                con.println("Loading themes...");
-                
-                TextInputFile themeFile = new TextInputFile("themes.txt");
-                ArrayList<String> themes = new ArrayList<>();
-                while (!themeFile.eof()) {
-                    themes.add(themeFile.readLine());
+                try {
+                    TextInputFile leaderboard = new TextInputFile("leaderboard.txt");
+                    con.println("LEADERBOARD:");
+                    while (!leaderboard.eof()) {
+                        con.println(leaderboard.readLine());
+                    }
+                    leaderboard.close();
+                } catch (Exception e) {
+                    con.println("Error reading leaderboard.");
                 }
-                themeFile.close();
-
-                if (themes.size() == 0) {
-                    con.println("No themes found! Please add one first.");
-                    con.getChar();
-                    continue;
-                }
-
-                con.println("Available Themes:");
-                for (int i = 0; i < themes.size(); i++) {
-                    con.println("(" + (i + 1) + ") " + themes.get(i));
-                }
-
-                con.print("Enter theme name exactly: ");
-                String chosenTheme = con.readLine();
-
-                File file = new File(chosenTheme);
-                if (!file.exists()) {
-                    con.println("That theme does not exist.");
-                    con.getChar();
-                    continue;
-                }
-
-                con.setDrawColor(Color.BLUE);
-                con.drawRect(20, 20, 1080, 600);
-                con.println("Theme loaded: " + chosenTheme);
-                con.println("(Gameplay not implemented in this draft.) Press any key.");
                 con.getChar();
             } else if (choice == 'a') {
                 con.clear();
-                con.print("Enter new theme name (e.g., animals.txt): ");
+                con.print("New theme name (ex. food.txt): ");
                 String newTheme = con.readLine();
                 TextOutputFile newFile = new TextOutputFile(newTheme);
-                String word;
-                con.println("Enter words (type STOP to finish):");
+                con.println("Add words (STOP to finish):");
                 while (true) {
-                    word = con.readLine();
+                    String word = con.readLine();
                     if (word.equalsIgnoreCase("STOP")) break;
                     newFile.print(word + "\n");
                 }
                 newFile.close();
-                TextOutputFile appendTheme = new TextOutputFile("themes.txt", true);
-                appendTheme.print(newTheme + "\n");
-                appendTheme.close();
-                con.println("Theme saved. Press any key to return.");
+
+                TextOutputFile append = new TextOutputFile("themes.txt", true);
+                append.print(newTheme + "\n");
+                append.close();
+
+                con.println("Theme saved!");
                 con.getChar();
-            } else if (choice == 'v') {
+            } else if (choice == 'p') {
+                // === Load themes ===
                 con.clear();
-                TextInputFile leader = new TextInputFile("leaderboard.txt");
-                con.println("LEADERBOARD:");
-                while (!leader.eof()) {
-                    con.println(leader.readLine());
+                ArrayList<String> themes = new ArrayList<>();
+                try {
+                    TextInputFile tFile = new TextInputFile("themes.txt");
+                    while (!tFile.eof()) {
+                        String line = tFile.readLine();
+                        if (line != null && !line.trim().isEmpty()) themes.add(line);
+                    }
+                    tFile.close();
+                } catch (Exception e) {
+                    con.println("No themes file found.");
                 }
-                leader.close();
+
+                if (themes.size() == 0) {
+                    con.println("No themes available. Please add one first.");
+                    con.getChar();
+                    continue;
+                }
+
+                con.println("Themes:");
+                for (int i = 0; i < themes.size(); i++) {
+                    con.println("(" + (i+1) + ") " + themes.get(i));
+                }
+                con.print("Type theme name: ");
+                String fileName = con.readLine();
+
+                File f = new File(fileName);
+                if (!f.exists()) {
+                    con.println("Theme file not found.");
+                    con.getChar();
+                    continue;
+                }
+
+                ArrayList<String> words = new ArrayList<>();
+                try {
+                    TextInputFile themeIn = new TextInputFile(fileName);
+                    while (!themeIn.eof()) words.add(themeIn.readLine());
+                    themeIn.close();
+                } catch (Exception e) {
+                    con.println("Error reading theme.");
+                    con.getChar();
+                    continue;
+                }
+
+                if (words.size() == 0) {
+                    con.println("No words found in this theme.");
+                    con.getChar();
+                    continue;
+                }
+
+                String wordToGuess = words.get(rand.nextInt(words.size()));
+                StringBuilder hidden = new StringBuilder("_".repeat(wordToGuess.length()));
+                ArrayList<Character> guessed = new ArrayList<>();
+
+                // === Draw border (shapes) ===
+                con.setDrawColor(Color.MAGENTA);
+                con.drawRect(10, 10, 1260, 700);
+
+                // === Game Loop ===
+                while (intPoints > 0 && hidden.toString().contains("_")) {
+                    con.println("Word: " + hidden);
+                    con.println("Points: " + intPoints);
+                    con.print("Guess a letter: ");
+                    char g = con.getChar();
+
+                    if (guessed.contains(g)) {
+                        con.println("Already guessed.");
+                        continue;
+                    }
+
+                    guessed.add(g);
+                    boolean found = false;
+                    for (int i = 0; i < wordToGuess.length(); i++) {
+                        if (wordToGuess.charAt(i) == g) {
+                            hidden.setCharAt(i, g);
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        intPoints--;
+                        con.println("Wrong!");
+                    } else {
+                        con.println("Correct!");
+                    }
+                }
+
+                if (intPoints > 0) {
+                    con.println("You guessed it! The word was: " + wordToGuess);
+                } else {
+                    con.println("You lost! The word was: " + wordToGuess);
+                }
+
+                // Save score
+                TextOutputFile lb = new TextOutputFile("leaderboard.txt", true);
+                lb.print(strName + "," + intPoints + "\n");
+                lb.close();
+
                 con.println("Press any key to return to menu.");
                 con.getChar();
             }
