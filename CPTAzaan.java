@@ -4,11 +4,10 @@ import java.util.*;
 import java.io.*;
 
 public class CPTAzaan {
-    public static void main(String[] args) {
-        arc.Console con = new arc.Console("Guess The Word", 1280, 720);
-        Random rand = new Random();
+    static arc.Console con = new arc.Console("Guess The Word", 1280, 720);
 
-        // Feature: Console window 1280x720 + Debug output
+    public static void main(String[] args) {
+        Random rand = new Random();
         System.out.println("[DEBUG] Game started");
 
         // === Animation Intro ===
@@ -25,10 +24,9 @@ public class CPTAzaan {
         con.clear();
         con.print("Enter your name: ");
         String strName = con.readLine();
-        int intPoints = strName.equalsIgnoreCase("statitan") ? 20 : 10; // Cheat feature
+        int intPoints = strName.equalsIgnoreCase("statitan") ? 20 : 10;
         System.out.println("[DEBUG] Player name: " + strName + ", Points: " + intPoints);
 
-        // === Main Menu ===
         char choice = ' ';
         while (choice != 'q') {
             con.clear();
@@ -75,22 +73,43 @@ public class CPTAzaan {
                 con.print("New theme name (ex. food.txt): ");
                 String newTheme = con.readLine();
                 TextOutputFile newFile = new TextOutputFile(newTheme);
-                con.println("Add words (STOP to finish):");
+
+                con.println("Add words one at a time. Type STOP to finish:");
                 while (true) {
+                    con.print("Enter word: ");
                     String word = con.readLine();
                     if (word.equalsIgnoreCase("STOP")) break;
-                    newFile.print(word + "\n");
+                    if (!word.trim().isEmpty()) {
+                        newFile.print(word + "\n");
+                        con.println("[Saved] " + word);
+                    }
                 }
                 newFile.close();
 
-                TextOutputFile append = new TextOutputFile("themes.txt", true);
-                append.print(newTheme + "\n");
-                append.close();
+                // Add to themes.txt
+                try {
+                    boolean alreadyListed = false;
+                    TextInputFile checkThemes = new TextInputFile("themes.txt");
+                    while (!checkThemes.eof()) {
+                        if (newTheme.equalsIgnoreCase(checkThemes.readLine())) {
+                            alreadyListed = true;
+                            break;
+                        }
+                    }
+                    checkThemes.close();
+
+                    if (!alreadyListed) {
+                        TextOutputFile append = new TextOutputFile("themes.txt", true);
+                        append.print(newTheme + "\n");
+                        append.close();
+                    }
+                } catch (Exception e) {
+                    con.println("Error updating themes.txt");
+                }
 
                 con.println("Theme saved!");
                 con.getChar();
             } else if (choice == 'p') {
-                // === Load themes ===
                 con.clear();
                 ArrayList<String> themes = new ArrayList<>();
                 try {
@@ -145,11 +164,9 @@ public class CPTAzaan {
                 StringBuilder hidden = new StringBuilder("_".repeat(wordToGuess.length()));
                 ArrayList<Character> guessed = new ArrayList<>();
 
-                // === Draw border (shapes) ===
                 con.setDrawColor(Color.MAGENTA);
                 con.drawRect(10, 10, 1260, 700);
 
-                // === Game Loop ===
                 while (intPoints > 0 && hidden.toString().contains("_")) {
                     con.println("Word: " + hidden);
                     con.println("Points: " + intPoints);
@@ -184,7 +201,6 @@ public class CPTAzaan {
                     con.println("You lost! The word was: " + wordToGuess);
                 }
 
-                // Save score
                 TextOutputFile lb = new TextOutputFile("leaderboard.txt", true);
                 lb.print(strName + "," + intPoints + "\n");
                 lb.close();
