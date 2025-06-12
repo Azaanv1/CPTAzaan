@@ -1,1 +1,6 @@
-burger
+pizza
+pasta
+burgers
+salad
+beans
+rice

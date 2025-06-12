@@ -1,230 +1,141 @@
 import arc.*;
-import java.awt.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class CPTAzaan {
-    static arc.Console con = new arc.Console("Guess The Word", 1280, 720);
+    Console c;
+    Procedure fp;
+    char[] gameboard;
+    char guessedLetter;
+    String input;
+    int wrongGuesses;
+    boolean playAgain;
+    int wins;
+    int highscore;
 
-    public static void main(String[] args) {
-        Random rand = new Random();
-        System.out.println("[DEBUG] Game started");
+    public Game() throws IOException {
+        c = new Console("Guess the Word");
+        startNewGame();
+    }
 
-        // === Animation Intro ===
-        for (int i = 0; i < 6; i++) {
-            con.clear();
-            if (i % 2 == 0) {
-                con.println("\n\n\n\n              G U E S S   T H E   W O R D");
+    public void startNewGame() throws IOException {
+        fp = new Procedure();  // Load new word
+        gameboard = new char[fp.getLength()];
+        for (int i = 0; i < gameboard.length; i++) {
+            gameboard[i] = '_';
+        }
+        wrongGuesses = 0;
+        playAgain = true;
+        wins = 0;
+
+        playGame();
+    }
+
+    public void playGame() throws IOException {
+        while (playAgain) {
+            while (wrongGuesses < 4 && !gameWon()) {
+                displayGameboard();
+                getLetter();
+                testLetter();
+            }
+
+            if (gameWon()) {
+                wins++;
+                c.println("🎉 Congratulations! You guessed the word: " + fp.getWord());
+                c.println("Wins so far: " + wins);
             } else {
-                con.println("\n\n\n\n              🎉 LET'S PLAY! 🎉");
+                c.println("❌ Out of guesses. The word was: " + fp.getWord());
             }
-            con.sleep(300);
+
+            c.print("Play again? (y/n): ");
+            String answer = c.readLine();
+            if (!answer.equalsIgnoreCase("y")) {
+                checkHighscore();
+                playAgain = false;
+                c.println("Thanks for playing! Total wins: " + wins);
+            } else {
+                resetGame();
+            }
         }
+    }
 
-        con.clear();
-        con.print("Enter your name: ");
-        String strName = con.readLine();
-        int intPoints = strName.equalsIgnoreCase("statitan") ? 20 : 10;
-        System.out.println("[DEBUG] Player name: " + strName + ", Points: " + intPoints);
+    public void displayGameboard() {
+        c.clear();
+        c.println("Word to guess: ");
+        for (char ch : gameboard) {
+            c.print(ch + " ");
+        }
+        c.println("\nTries remaining: " + (4 - wrongGuesses));
+    }
 
-        char choice = ' ';
-        while (choice != 'q') {
-            con.clear();
-            con.println("MAIN MENU:");
-            con.println("(p) Play Game");
-            con.println("(v) View Leaderboard");
-            con.println("(a) Add Theme");
-            con.println("(h) Help");
-            con.println("(s) ??? Secret Option");
-            con.println("(q) Quit");
-            con.print("Choose: ");
-            choice = con.getChar();
-            System.out.println("[DEBUG] Menu Choice: " + choice);
+    public boolean gameWon() {
+        for (char ch : gameboard) {
+            if (ch == '_') return false;
+        }
+        return true;
+    }
 
-            if (choice == 'h') {
-                con.clear();
-                con.println("HELP:");
-                con.println("- Guess the letters in the word.");
-                con.println("- Wrong guess = lose a point.");
-                con.println("- Secret option and cheat available!");
-                con.getChar();
-            } else if (choice == 's') {
-                con.clear();
-                con.println("💡 SECRET OPTION 💡");
-                con.println("Why do Java developers wear glasses?");
-                con.sleep(1500);
-                con.println("Because they don't C#! 😂");
-                con.getChar();
-            } else if (choice == 'v') {
-                con.clear();
-                try {
-                    TextInputFile leaderboard = new TextInputFile("leaderboard.txt");
-                    con.println("LEADERBOARD:");
-                    while (!leaderboard.eof()) {
-                        con.println(leaderboard.readLine());
-                    }
-                    leaderboard.close();
-                } catch (Exception e) {
-                    con.println("Error reading leaderboard.");
-                }
-                con.getChar();
-            } else if (choice == 'a') {
-                con.clear();
-                con.print("Enter new theme name (without .txt): ");
-                String newTheme = con.readLine().trim();
+    public void getLetter() {
+        while (true) {
+            c.print("Enter a letter: ");
+            input = c.readLine().toLowerCase();
 
-                if (newTheme.isEmpty()) {
-                    con.println("Theme name can't be empty!");
-                    con.getChar();
-                    continue;
-                }
+            if (input.length() == 1 && Character.isLetter(input.charAt(0))) {
+                guessedLetter = input.charAt(0);
+                break;
+            } else {
+                c.println("Invalid input. Please enter one letter.");
+            }
+        }
+    }
 
-                if (!newTheme.endsWith(".txt")) {
-                    newTheme += ".txt";
-                }
-
-                TextOutputFile newFile = new TextOutputFile(newTheme);
-                con.println("Add words one by one. Type STOP to finish:");
-
-                while (true) {
-                    String word = con.readLine().trim();
-                    if (word.equalsIgnoreCase("STOP")) break;
-                    if (!word.isEmpty()) {
-                        newFile.print(word + "\n");
-                    }
-                }
-                newFile.close();
-
-                boolean alreadyExists = false;
-                try {
-                    TextInputFile checkFile = new TextInputFile("themes.txt");
-                    while (!checkFile.eof()) {
-                        String line = checkFile.readLine();
-                        if (line != null && line.trim().equalsIgnoreCase(newTheme)) {
-                            alreadyExists = true;
-                            break;
-                        }
-                    }
-                    checkFile.close();
-                } catch (Exception e) {
-                    // Do nothing, themes.txt might not exist yet
-                }
-
-                if (!alreadyExists) {
-                    TextOutputFile append = new TextOutputFile("themes.txt", true);
-                    append.print(newTheme + "\n");
-                    append.close();
-                }
-
-                con.println("✅ Theme saved and added to themes.txt!");
-                con.println("Press any key to return to the menu.");
-                con.getChar();
-            } else if (choice == 'p') {
-                con.clear();
-                ArrayList<String> themes = new ArrayList<>();
-                try {
-                    TextInputFile tFile = new TextInputFile("themes.txt");
-                    while (!tFile.eof()) {
-                        String line = tFile.readLine();
-                        if (line != null && !line.trim().isEmpty()) themes.add(line.trim());
-                    }
-                    tFile.close();
-                } catch (Exception e) {
-                    con.println("No themes file found.");
-                }
-
-                if (themes.size() == 0) {
-                    con.println("No themes available. Please add one first.");
-                    con.getChar();
-                    continue;
-                }
-
-                con.println("Themes:");
-                for (int i = 0; i < themes.size(); i++) {
-                    con.println("(" + (i + 1) + ") " + themes.get(i));
-                }
-                con.print("Type theme name exactly (e.g., sports.txt): ");
-                String fileName = con.readLine().trim();
-
-                File f = new File(fileName);
-                if (!f.exists()) {
-                    con.println("Theme file not found.");
-                    con.getChar();
-                    continue;
-                }
-
-                ArrayList<String> words = new ArrayList<>();
-                try {
-                    TextInputFile themeIn = new TextInputFile(fileName);
-                    while (!themeIn.eof()) {
-                        String line = themeIn.readLine();
-                        if (line != null && !line.trim().isEmpty()) {
-                            words.add(line.trim());
-                        }
-                    }
-                    themeIn.close();
-                } catch (Exception e) {
-                    con.println("Error reading theme.");
-                    con.getChar();
-                    continue;
-                }
-
-                if (words.size() == 0) {
-                    con.println("No words found in this theme.");
-                    con.getChar();
-                    continue;
-                }
-
-                String wordToGuess = words.get(rand.nextInt(words.size()));
-                StringBuilder hidden = new StringBuilder("_".repeat(wordToGuess.length()));
-                ArrayList<Character> guessed = new ArrayList<>();
-
-                con.setDrawColor(Color.MAGENTA);
-                con.drawRect(10, 10, 1260, 700);
-
-                while (intPoints > 0 && hidden.toString().contains("_")) {
-                    con.println("Word: " + hidden);
-                    con.println("Points: " + intPoints);
-                    con.print("Guess a letter: ");
-                    char g = con.getChar();
-
-                    if (guessed.contains(g)) {
-                        con.println("Already guessed.");
-                        continue;
-                    }
-
-                    guessed.add(g);
-                    boolean found = false;
-                    for (int i = 0; i < wordToGuess.length(); i++) {
-                        if (wordToGuess.charAt(i) == g) {
-                            hidden.setCharAt(i, g);
-                            found = true;
-                        }
-                    }
-
-                    if (!found) {
-                        intPoints--;
-                        con.println("Wrong!");
-                    } else {
-                        con.println("Correct!");
-                    }
-                }
-
-                if (intPoints > 0) {
-                    con.println("You guessed it! The word was: " + wordToGuess);
-                } else {
-                    con.println("You lost! The word was: " + wordToGuess);
-                }
-
-                TextOutputFile lb = new TextOutputFile("leaderboard.txt", true);
-                lb.print(strName + "," + intPoints + "\n");
-                lb.close();
-
-                con.println("Press any key to return to menu.");
-                con.getChar();
+    public void testLetter() {
+        boolean correct = false;
+        for (int i = 0; i < fp.getLength(); i++) {
+            if (guessedLetter == fp.getWord().charAt(i)) {
+                gameboard[i] = guessedLetter;
+                correct = true;
             }
         }
 
-        con.closeConsole();
+        if (!correct) {
+            wrongGuesses++;
+            c.println("'" + guessedLetter + "' is not in the word. Tries left: " + (4 - wrongGuesses));
+        }
+    }
+
+    public void resetGame() throws IOException {
+        fp = new Procedure();
+        gameboard = new char[fp.getLength()];
+        for (int i = 0; i < gameboard.length; i++) {
+            gameboard[i] = '_';
+        }
+        wrongGuesses = 0;
+    }
+
+    public void checkHighscore() throws IOException {
+        File file = new File("scores.txt");
+        if (!file.exists()) {
+            PrintWriter writer = new PrintWriter(file);
+            writer.println(0);
+            writer.close();
+        }
+
+        Scanner inputFile = new Scanner(file);
+        highscore = Integer.parseInt(inputFile.nextLine());
+        inputFile.close();
+
+        if (wins > highscore) {
+            c.println("🏆 NEW HIGHSCORE! You won " + wins + " times (previous: " + highscore + ")");
+            PrintWriter outputFile = new PrintWriter(file);
+            outputFile.println(wins);
+            outputFile.close();
+        } else {
+            c.println("You won " + wins + " time(s). Highscore is still " + highscore + ".");
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        new Game();
     }
 }
