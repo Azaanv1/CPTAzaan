@@ -70,44 +70,54 @@ public class CPTAzaan {
                 con.getChar();
             } else if (choice == 'a') {
                 con.clear();
-                con.print("New theme name (ex. food.txt): ");
-                String newTheme = con.readLine();
-                TextOutputFile newFile = new TextOutputFile(newTheme);
+                con.print("Enter new theme name (without .txt): ");
+                String newTheme = con.readLine().trim();
 
-                con.println("Add words one at a time. Type STOP to finish:");
+                if (newTheme.isEmpty()) {
+                    con.println("Theme name can't be empty!");
+                    con.getChar();
+                    continue;
+                }
+
+                if (!newTheme.endsWith(".txt")) {
+                    newTheme += ".txt";
+                }
+
+                TextOutputFile newFile = new TextOutputFile(newTheme);
+                con.println("Add words one by one. Type STOP to finish:");
+
                 while (true) {
-                    con.print("Enter word: ");
-                    String word = con.readLine();
+                    String word = con.readLine().trim();
                     if (word.equalsIgnoreCase("STOP")) break;
-                    if (!word.trim().isEmpty()) {
+                    if (!word.isEmpty()) {
                         newFile.print(word + "\n");
-                        con.println("[Saved] " + word);
                     }
                 }
                 newFile.close();
 
-                // Add to themes.txt
+                boolean alreadyExists = false;
                 try {
-                    boolean alreadyListed = false;
-                    TextInputFile checkThemes = new TextInputFile("themes.txt");
-                    while (!checkThemes.eof()) {
-                        if (newTheme.equalsIgnoreCase(checkThemes.readLine())) {
-                            alreadyListed = true;
+                    TextInputFile checkFile = new TextInputFile("themes.txt");
+                    while (!checkFile.eof()) {
+                        String line = checkFile.readLine();
+                        if (line != null && line.trim().equalsIgnoreCase(newTheme)) {
+                            alreadyExists = true;
                             break;
                         }
                     }
-                    checkThemes.close();
-
-                    if (!alreadyListed) {
-                        TextOutputFile append = new TextOutputFile("themes.txt", true);
-                        append.print(newTheme + "\n");
-                        append.close();
-                    }
+                    checkFile.close();
                 } catch (Exception e) {
-                    con.println("Error updating themes.txt");
+                    // Do nothing, themes.txt might not exist yet
                 }
 
-                con.println("Theme saved!");
+                if (!alreadyExists) {
+                    TextOutputFile append = new TextOutputFile("themes.txt", true);
+                    append.print(newTheme + "\n");
+                    append.close();
+                }
+
+                con.println("✅ Theme saved and added to themes.txt!");
+                con.println("Press any key to return to the menu.");
                 con.getChar();
             } else if (choice == 'p') {
                 con.clear();
@@ -116,7 +126,7 @@ public class CPTAzaan {
                     TextInputFile tFile = new TextInputFile("themes.txt");
                     while (!tFile.eof()) {
                         String line = tFile.readLine();
-                        if (line != null && !line.trim().isEmpty()) themes.add(line);
+                        if (line != null && !line.trim().isEmpty()) themes.add(line.trim());
                     }
                     tFile.close();
                 } catch (Exception e) {
@@ -131,10 +141,10 @@ public class CPTAzaan {
 
                 con.println("Themes:");
                 for (int i = 0; i < themes.size(); i++) {
-                    con.println("(" + (i+1) + ") " + themes.get(i));
+                    con.println("(" + (i + 1) + ") " + themes.get(i));
                 }
-                con.print("Type theme name: ");
-                String fileName = con.readLine();
+                con.print("Type theme name exactly (e.g., sports.txt): ");
+                String fileName = con.readLine().trim();
 
                 File f = new File(fileName);
                 if (!f.exists()) {
@@ -146,7 +156,12 @@ public class CPTAzaan {
                 ArrayList<String> words = new ArrayList<>();
                 try {
                     TextInputFile themeIn = new TextInputFile(fileName);
-                    while (!themeIn.eof()) words.add(themeIn.readLine());
+                    while (!themeIn.eof()) {
+                        String line = themeIn.readLine();
+                        if (line != null && !line.trim().isEmpty()) {
+                            words.add(line.trim());
+                        }
+                    }
                     themeIn.close();
                 } catch (Exception e) {
                     con.println("Error reading theme.");
